@@ -10,10 +10,10 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 from sklearn.pipeline import Pipeline
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn.multioutput import MultiOutputClassifier
-from skmultilearn.problem_transform import BinaryRelevance
-from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.multioutput import MultiOutputClassifier
+# from skmultilearn.problem_transform import BinaryRelevance
+# from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -59,23 +59,23 @@ def tokenize(text):
 
 def build_model():
     # less time, but worse results
-    # pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
-    #                      ('tfidf', TfidfTransformer()),
-    #                      ('clf',
-    #                       MultiOutputClassifier(
-    #                           RandomForestClassifier(random_state=42)))])
-
-    # more time, but better results
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
                          ('tfidf', TfidfTransformer()),
-                         ('clf', BinaryRelevance(GaussianNB()))])
+                         ('clf',
+                          MultiOutputClassifier(
+                              RandomForestClassifier(random_state=42)))])
+
+    # more time, but better results
+    # pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
+    #                      ('tfidf', TfidfTransformer()),
+    #                      ('clf', BinaryRelevance(GaussianNB()))])
 
     parameters = {
         'vect__max_df': (0.5, 1.0),
         'tfidf__smooth_idf': (True, False)
     }
 
-    model = GridSearchCV(pipeline, param_grid=parameters, cv=5, n_jobs=2)
+    model = GridSearchCV(pipeline, param_grid=parameters, cv=5, n_jobs=-1)
 
     return model
 
