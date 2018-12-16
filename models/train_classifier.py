@@ -101,13 +101,10 @@ def main():
         model = build_model()
 
         print('Training model...')
-        start_counter = time.perf_counter()
         start_time = time.process_time()
         model.fit(X_train, Y_train)
         end_time = time.process_time()
-        end_counter = time.perf_counter()
-        print('Training time: {}s (perf counter: {}s)'.format(
-            end_time - start_time, end_counter - start_counter))
+        print('Training time: {}s'.format(end_time - start_time))
 
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test, category_names)
