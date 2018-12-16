@@ -10,8 +10,10 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.multioutput import MultiOutputClassifier
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.multioutput import MultiOutputClassifier
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.naive_bayes import MultinomialNB
 # from skmultilearn.problem_transform import BinaryRelevance
 # from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
@@ -59,11 +61,16 @@ def tokenize(text):
 
 def build_model():
     # less time, but worse results
+    # pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
+    #                      ('tfidf', TfidfTransformer()),
+    #                      ('clf',
+    #                       MultiOutputClassifier(
+    #                           RandomForestClassifier(random_state=42)))])
+
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
                          ('tfidf', TfidfTransformer()),
                          ('clf',
-                          MultiOutputClassifier(
-                              RandomForestClassifier(random_state=42)))])
+                          OneVsRestClassifier(MultinomialNB(fit_prior=True)))])
 
     # more time, but better results
     # pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
