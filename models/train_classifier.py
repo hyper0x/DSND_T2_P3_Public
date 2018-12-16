@@ -10,8 +10,10 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.multioutput import MultiOutputClassifier
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.multioutput import MultiOutputClassifier
+from skmultilearn.problem_transform import BinaryRelevance
+from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -56,14 +58,14 @@ def tokenize(text):
 
 
 def build_model():
+    # less time, but worse results
     # pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
     #                      ('tfidf', TfidfTransformer()),
     #                      ('clf',
     #                       MultiOutputClassifier(
     #                           RandomForestClassifier(random_state=42)))])
 
-    from skmultilearn.problem_transform import BinaryRelevance
-    from sklearn.naive_bayes import GaussianNB
+    # more time, but better results
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
                          ('tfidf', TfidfTransformer()),
                          ('clf', BinaryRelevance(GaussianNB()))])
@@ -80,7 +82,8 @@ def build_model():
 
 def evaluate_model(model, X_test, Y_test, category_names):
     Y_pred = model.predict(X_test)
-    for i in range(0, len(category_names)):
+    for i, name in enumerate(category_names):
+        print('{}:'.format(name))
         y_test, y_pred = Y_test[:, i], Y_pred[:, i]
         print(classification_report(y_test, y_pred))
 
