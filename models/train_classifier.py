@@ -2,6 +2,7 @@ import sys
 from sqlalchemy import create_engine
 import pandas as pd
 import re
+import time
 
 import nltk
 from nltk.corpus import stopwords
@@ -55,19 +56,24 @@ def tokenize(text):
 
 
 def build_model():
+    # pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
+    #                      ('tfidf', TfidfTransformer()),
+    #                      ('clf',
+    #                       MultiOutputClassifier(
+    #                           RandomForestClassifier(random_state=42)))])
+
+    from skmultilearn.problem_transform import BinaryRelevance
+    from sklearn.naive_bayes import GaussianNB
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
                          ('tfidf', TfidfTransformer()),
-                         ('clf',
-                          MultiOutputClassifier(
-                              RandomForestClassifier(random_state=42)))])
+                         ('clf', BinaryRelevance(GaussianNB()))])
 
     parameters = {
         'vect__max_df': (0.5, 1.0),
-        'tfidf__smooth_idf': (True, False),
-        'clf__estimator__n_estimators': [5, 10],
+        'tfidf__smooth_idf': (True, False)
     }
 
-    model = GridSearchCV(pipeline, param_grid=parameters, cv=5, n_jobs=-1)
+    model = GridSearchCV(pipeline, param_grid=parameters, cv=5, n_jobs=2)
 
     return model
 
@@ -95,7 +101,13 @@ def main():
         model = build_model()
 
         print('Training model...')
+        start_counter = time.perf_counter()
+        start_time = time.process_time()
         model.fit(X_train, Y_train)
+        end_time = time.process_time()
+        end_counter = time.perf_counter()
+        print('Training time: {}s (perf counter: {}s)'.format(
+            end_time - start_time, end_counter - start_counter))
 
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test, category_names)
