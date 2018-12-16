@@ -59,8 +59,8 @@ def build_model():
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
                          ('tfidf', TfidfTransformer()),
                          ('clf',
-                            MultiOutputClassifier(
-                                RandomForestClassifier(random_state=42)))])
+                          MultiOutputClassifier(
+                              RandomForestClassifier(random_state=42)))])
 
     parameters = {
         'vect__max_df': (0.5, 0.75, 1.0),
@@ -119,5 +119,15 @@ def main():
               'train_classifier.py ../data/DisasterResponse.db classifier.pkl')
 
 
+def check():
+    if len(sys.argv) == 3:
+        model_filepath = sys.argv[2]
+        print('Check the model located at \'{}\'...'.format(model_filepath))
+        model = joblib.load(model_filepath, 'r')
+        print("Best Score:", model.best_score_)
+        print("Best Parameters:", model.best_params_)
+
+
 if __name__ == '__main__':
     main()
+    check()

@@ -71,11 +71,6 @@ def main():
 
         print('Cleaned data saved to database!')
 
-        # print('Query one row from table \'{}\'...'.format(table_name))
-        # sql = 'SELECT * FROM {} LIMIT 1'.format(table_name)
-        # engine = create_engine('sqlite:///' + database_filepath)
-        # print(pd.read_sql(sql, engine))
-
     else:
         print('Please provide the filepaths of the messages and categories '\
               'datasets as the first and second argument respectively, as '\
@@ -85,5 +80,18 @@ def main():
               'DisasterResponse.db')
 
 
+def check():
+    if len(sys.argv) == 4:
+        table_name = 'Messages'
+        database_filepath = sys.argv[3]
+        print('Check the database located at \'{}\'...'.format(
+            database_filepath))
+        print('Query the count of table \'{}\'...'.format(table_name))
+        sql = 'SELECT COUNT(*) FROM {}'.format(table_name)
+        engine = create_engine('sqlite:///' + database_filepath)
+        print(pd.read_sql(sql, engine))
+
+
 if __name__ == '__main__':
     main()
+    check()
