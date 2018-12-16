@@ -10,12 +10,8 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 from sklearn.pipeline import Pipeline
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn.multioutput import MultiOutputClassifier
-from sklearn.multiclass import OneVsRestClassifier
-from sklearn.naive_bayes import MultinomialNB
-# from skmultilearn.problem_transform import BinaryRelevance
-# from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.multioutput import MultiOutputClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -60,26 +56,16 @@ def tokenize(text):
 
 
 def build_model():
-    # less time, but worse results
-    # pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
-    #                      ('tfidf', TfidfTransformer()),
-    #                      ('clf',
-    #                       MultiOutputClassifier(
-    #                           RandomForestClassifier(random_state=42)))])
-
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
                          ('tfidf', TfidfTransformer()),
                          ('clf',
-                          OneVsRestClassifier(MultinomialNB(fit_prior=True)))])
-
-    # more time, but better results
-    # pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
-    #                      ('tfidf', TfidfTransformer()),
-    #                      ('clf', BinaryRelevance(GaussianNB()))])
+                            MultiOutputClassifier(
+                                RandomForestClassifier(random_state=42)))])
 
     parameters = {
-        'vect__max_df': (0.5, 1.0),
-        'tfidf__smooth_idf': (True, False)
+        'vect__max_df': (0.5, 0.75, 1.0),
+        'tfidf__smooth_idf': (True, False),
+        'clf__estimator__n_estimators': [10, 20]
     }
 
     model = GridSearchCV(pipeline, param_grid=parameters, cv=5, n_jobs=-1)
