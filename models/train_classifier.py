@@ -101,9 +101,9 @@ def main():
         model = build_model()
 
         print('Training model...')
-        start_time = time.process_time()
+        start_time = time.time()
         model.fit(X_train, Y_train)
-        end_time = time.process_time()
+        end_time = time.time()
         print('Training time: {}s'.format(end_time - start_time))
 
         print('Evaluating model...')
