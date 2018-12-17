@@ -55,22 +55,26 @@ def tokenize(text):
     return clean_tokens
 
 
-def build_model():
+def build_pipeline():
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
                          ('tfidf', TfidfTransformer()),
                          ('clf',
                           MultiOutputClassifier(
                               RandomForestClassifier(random_state=42)))])
 
+    return pipeline
+
+
+def build_grid_search(pipeline):
     parameters = {
         'vect__max_df': (0.5, 0.75, 1.0),
         'tfidf__smooth_idf': (True, False),
         'clf__estimator__n_estimators': [10, 20]
     }
 
-    model = GridSearchCV(pipeline, param_grid=parameters, cv=5, n_jobs=-1)
+    cv = GridSearchCV(pipeline, param_grid=parameters, cv=5, n_jobs=-1)
 
-    return model
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -82,7 +86,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    joblib.dump(model, model_filepath)
+    joblib.dump(model, model_filepath, compress=('gzip', 6), protocol=4)
 
 
 def main():
@@ -94,21 +98,24 @@ def main():
             X, Y, test_size=0.2)
 
         print('Building model...')
-        model = build_model()
+        pipeline = build_pipeline()
+        gscv = build_grid_search(pipeline)
 
         print('Training model...')
         start_time = time.time()
-        model.fit(X_train, Y_train)
+        gscv.fit(X_train, Y_train)
         end_time = time.time()
         print('Training time: {}s'.format(end_time - start_time))
 
-        print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        print("Best score:", gscv.best_score_)
+        print("Best parameters:", gscv.best_params_)
 
-        print("Best Parameters:", model.best_params_)
+        best_model = gscv.best_estimator_
+        print('Evaluating model...')
+        evaluate_model(best_model, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, model_filepath)
+        save_model(best_model, model_filepath)
 
         print('Trained model saved!')
 
@@ -123,9 +130,7 @@ def check():
     if len(sys.argv) == 3:
         model_filepath = sys.argv[2]
         print('Check the model located at \'{}\'...'.format(model_filepath))
-        model = joblib.load(model_filepath, 'r')
-        print("Best Score:", model.best_score_)
-        print("Best Parameters:", model.best_params_)
+        joblib.load(model_filepath, mmap_mode='c')
 
 
 if __name__ == '__main__':
