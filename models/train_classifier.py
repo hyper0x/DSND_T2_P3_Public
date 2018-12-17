@@ -86,7 +86,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    joblib.dump(model, model_filepath, compress=('gzip', 6), protocol=4)
+    return joblib.dump(model, model_filepath, compress=('gzip', 6), protocol=4)
 
 
 def main():
@@ -115,9 +115,9 @@ def main():
         evaluate_model(best_model, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(best_model, model_filepath)
+        filenames = save_model(best_model, model_filepath)
 
-        print('Trained model saved!')
+        print('Trained model saved! (filenames: {})'.format(filenames))
 
     else:
         print('Please provide the filepath of the disaster messages database '\
