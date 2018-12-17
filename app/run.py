@@ -23,11 +23,11 @@ df = pd.read_sql_table('Messages', engine)
 model = joblib.load("../models/classifier.pkl")
 
 
-# index webpage displays cool visuals and receives user input text for model
 @app.route('/')
 @app.route('/index')
 def index():
-
+    """Response the index webpage displays cool visuals and receives user input text for model.
+    """
     # show distribution of different genre
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
@@ -120,9 +120,10 @@ def index():
     return render_template('master.html', ids=ids, graphJSON=graphJSON)
 
 
-# web page that handles user query and displays model results
 @app.route('/go')
 def go():
+    """Response the web page that handles user query and displays model results.
+    """
     # save user input in query
     query = request.args.get('query', '')
 
@@ -136,6 +137,8 @@ def go():
 
 
 def main():
+    """The main function.
+    """
     app.run(host='0.0.0.0', port=3001, debug=True)
 
 
