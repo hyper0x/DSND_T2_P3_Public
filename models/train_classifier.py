@@ -18,9 +18,11 @@ from sklearn.metrics import classification_report
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.externals import joblib
 
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
+
+def download_nltk():
+    nltk.download('punkt')
+    nltk.download('stopwords')
+    nltk.download('wordnet')
 
 
 def load_data(database_filepath):
@@ -130,9 +132,15 @@ def check():
     if len(sys.argv) == 3:
         model_filepath = sys.argv[2]
         print('Check the model located at \'{}\'...'.format(model_filepath))
-        joblib.load(model_filepath)
+        print('Load the model...')
+        model = joblib.load(model_filepath)
+        print('Use model to predict classification for query...')
+        query = 'We have no one everybody is dead.'
+        classification_labels = model.predict([query])[0]
+        print('Classification labels: {}'.format(classification_labels))
 
 
 if __name__ == '__main__':
-   # main()
+    download_nltk()
+    main()
     check()

@@ -1,9 +1,7 @@
 import json
 import plotly
 import pandas as pd
-
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
+import numpy as np
 
 from flask import Flask
 from flask import render_template, request, jsonify
@@ -11,20 +9,11 @@ from plotly.graph_objs import Bar
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
+import sys
+sys.path.append('../')
+from models.train_classifier import tokenize
+
 app = Flask(__name__)
-
-
-def tokenize(text):
-    tokens = word_tokenize(text)
-    lemmatizer = WordNetLemmatizer()
-
-    clean_tokens = []
-    for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
-
-    return clean_tokens
-
 
 # load data
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
@@ -39,22 +28,86 @@ model = joblib.load("../models/classifier.pkl")
 @app.route('/index')
 def index():
 
-    # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
+    # show distribution of different genre
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 
+    # show distribution of different category
+    categories = list(df.columns[4:])
+    category_counts = []
+    for column_name in categories:
+        category_counts.append(np.sum(df[column_name]))
+
+    # show distribution of different category group by genre
+    traces = []
+    for genre in genre_names:
+        df_genre = df[df['genre'] == genre]
+        category_counts = []
+        for column_name in categories:
+            category_counts.append(np.sum(df_genre[column_name]))
+
+        trace = Bar(x=categories, y=category_counts, name=genre)
+        traces.append(trace)
+
+    # show top N message categories
+    category_vals = df.iloc[:, 4:]
+    category_means = category_vals.mean().sort_values(ascending=False)[0:15]
+    category_names = list(category_means.index)
+
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
-    graphs = [{
+    graphs = \
+    [{
         'data': [Bar(x=genre_names, y=genre_counts)],
         'layout': {
             'title': 'Distribution of Message Genres',
-            'yaxis': {
-                'title': "Count"
-            },
             'xaxis': {
                 'title': "Genre"
+            },
+            'yaxis': {
+                'title': "Count"
+            }
+        }
+    },
+    {
+        'data': [Bar(x=categories, y=category_counts)],
+        'layout': {
+            'title': 'Distribution of Message Categories',
+            'xaxis': {
+                'title': "Category",
+                'showticklabels': True,
+                'tickangle': -30
+            },
+            'yaxis': {
+                'title': "Count"
+            }
+        }
+    },
+    {
+        'data': traces,
+        'layout': {
+            'title': 'Distribution of Message Categories Group by Genres',
+            'barmode': 'group',
+            'xaxis': {
+                'title': "Category",
+                'showticklabels': True,
+                'tickangle': -30
+            },
+            'yaxis': {
+                'title': "Count"
+            }
+        }
+    },
+    {
+        'data': [Bar(x=category_names, y=category_means)],
+        'layout': {
+            'title': 'Top 15 Message Categories',
+            'xaxis': {
+                'title': "Categories",
+                'showticklabels': True,
+                'tickangle': -30
+            },
+            'yaxis': {
+                'title': "Ratio"
             }
         }
     }]
