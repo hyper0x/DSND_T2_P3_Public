@@ -130,9 +130,9 @@ def check():
     if len(sys.argv) == 3:
         model_filepath = sys.argv[2]
         print('Check the model located at \'{}\'...'.format(model_filepath))
-        joblib.load(model_filepath, mmap_mode='c')
+        joblib.load(model_filepath)
 
 
 if __name__ == '__main__':
-    main()
+   # main()
     check()

@@ -9,7 +9,7 @@ nltk==3.4
 numpy==1.15.4
 pandas==0.23.4
 pycrypto==2.6.1
-pygobject==3.26.1
+pygobject==3.30.4
 python-dateutil==2.7.5
 pytz==2018.7
 pyxdg==0.25
