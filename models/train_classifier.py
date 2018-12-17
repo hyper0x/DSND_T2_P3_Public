@@ -20,12 +20,32 @@ from sklearn.externals import joblib
 
 
 def download_nltk():
+    """Download the NLTK data.
+    """
     nltk.download('punkt')
     nltk.download('stopwords')
     nltk.download('wordnet')
 
 
 def load_data(database_filepath):
+    """Load data from the specified CSV files.
+
+    Parameters
+    ----------
+    database_filepath : str
+        The path to the database file.
+
+    Returns
+    -------
+    X : list, one-dimensional
+        The list of independent variables.
+
+    Y : list, two-dimensional
+        The list of dependent variables.
+
+    category_names : list
+        The list of category names.
+    """
     # load data from database
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('Messages', engine)
@@ -41,6 +61,18 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    """Generate and return the clean tokens based on the text.
+
+    Parameters
+    ----------
+    text : str
+        The text that represents the message.
+
+    Returns
+    -------
+    clean_tokens : list
+        The clean tokens based on the text.
+    """
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     stop_words = stopwords.words("english")
     lemmatizer = WordNetLemmatizer()
@@ -58,6 +90,13 @@ def tokenize(text):
 
 
 def build_pipeline():
+    """Build and return a pipeline containing token count vectorizer, TF-IDF transformer and classifier.
+
+    Returns
+    -------
+    pipeline : sklearn.pipeline.Pipeline
+        The pipeline.
+    """
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
                          ('tfidf', TfidfTransformer()),
                          ('clf',
@@ -68,6 +107,18 @@ def build_pipeline():
 
 
 def build_grid_search(pipeline):
+    """Build a grid search CV based on the pipeline.
+
+    Parameters
+    ----------
+    pipeline : sklearn.pipeline.Pipeline
+        The pipeline containing classifier.
+
+    Returns
+    -------
+    cv : sklearn.model_selection.GridSearchCV
+        The grid search CV.
+    """
     parameters = {
         'vect__max_df': (0.5, 0.75, 1.0),
         'tfidf__smooth_idf': (True, False),
@@ -80,6 +131,22 @@ def build_grid_search(pipeline):
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    """Evaluate the trained model.
+
+    Parameters
+    ----------
+    model : *, one model
+        The trained model.
+
+    X_test : list, one-dimensional
+        The list of independent variables used for testing.
+
+    Y_test : list, two-dimensional
+        The list of dependent variables used for testing.
+
+    category_names : list
+        The list of category names.
+    """
     Y_pred = model.predict(X_test)
     for i, name in enumerate(category_names):
         print('{}:'.format(name))
@@ -88,10 +155,31 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    return joblib.dump(model, model_filepath, compress=('gzip', 6), protocol=4)
+    """Persist the model to the specified path.
+
+    Parameters
+    ----------
+    model : *, one model
+        The trained model.
+
+    model_filepath : str
+        The path used to persist the model.
+
+    Returns
+    -------
+    filenames: list of strings
+        The list of file names in which the data is stored. If
+        compress is false, each array is stored in a different file.
+    """
+    filenames = joblib.dump(
+        model, model_filepath, compress=('gzip', 6), protocol=4)
+
+    return filenames
 
 
 def main():
+    """The main function.
+    """
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
@@ -129,6 +217,8 @@ def main():
 
 
 def check():
+    """Check the validity of the pickle file.
+    """
     if len(sys.argv) == 3:
         model_filepath = sys.argv[2]
         print('Check the model located at \'{}\'...'.format(model_filepath))

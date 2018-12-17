@@ -83,7 +83,7 @@ def save_data(df, database_filename, table_name):
         The dataframe containing data.
 
     database_filename : str
-        The path to the database file.
+        The name of database file.
 
     table_name : str
         The name of table.
