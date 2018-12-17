@@ -4,6 +4,21 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
+    """Load data from the specified CSV files.
+
+    Parameters
+    ----------
+    messages_filepath : str
+        The path to the CSV file containing the message data.
+
+    categories_filepath : str
+        The path to the CSV file containing the category data.
+
+    Returns
+    -------
+    df : pandas.Dataframe
+        The dataframe containing message data and category data.
+    """
     # load messages dataset
     messages = pd.read_csv(messages_filepath)
 
@@ -17,6 +32,18 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    """Transform and clean up data.
+
+    Parameters
+    ----------
+    df : pandas.Dataframe
+        The dataframe containing message data and category data.
+
+    Returns
+    -------
+    df : pandas.Dataframe
+        The dataframe containing clean data.
+    """
     # create a dataframe of the 36 individual category columns
     categories = df['categories'].str.split(';', expand=True)
 
@@ -47,12 +74,27 @@ def clean_data(df):
     return df
 
 
-def save_data(df, database_filename, tabel_name):
+def save_data(df, database_filename, table_name):
+    """Store data in the database.
+
+    Parameters
+    ----------
+    df : pandas.Dataframe
+        The dataframe containing data.
+
+    database_filename : str
+        The path to the database file.
+
+    table_name : str
+        The name of table.
+    """
     engine = create_engine('sqlite:///' + database_filename)
-    df.to_sql(tabel_name, engine, if_exists='replace', index=False)
+    df.to_sql(table_name, engine, if_exists='replace', index=False)
 
 
 def main():
+    """The main function.
+    """
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[
@@ -81,6 +123,8 @@ def main():
 
 
 def check():
+    """Check the validity of the database file.
+    """
     if len(sys.argv) == 4:
         table_name = 'Messages'
         database_filepath = sys.argv[3]
